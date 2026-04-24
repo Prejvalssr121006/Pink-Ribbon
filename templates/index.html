@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pink Ribbon – AI Based Breast Cancer Detection System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --pink-primary: #e91e8c;
+    --pink-light: #fce4f3;
+    --pink-soft: #fdf0f8;
+    --pink-mid: #f48fb1;
+    --pink-accent: #ff4d9e;
+    --blue-soft: #e8f4fd;
+    --blue-mid: #90caf9;
+    --blue-primary: #1565c0;
+    --blue-accent: #42a5f5;
+    --teal: #00897b;
+    --teal-light: #e0f2f1;
+    --amber: #f57c00;
+    --amber-light: #fff3e0;
+    --red: #c62828;
+    --red-light: #ffebee;
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --white: #ffffff;
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --border: #e8ecf0;
+    --text-primary: #1a2332;
+    --text-secondary: #5a6478;
+    --text-muted: #9aa3b2;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    height: 100vh;              /* FIX: full viewport, no page-level scroll */
+    overflow: hidden;           /* FIX: only panels scroll, not whole page */
+    font-size: 13.5px;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-logo {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #e91e8c, #ff6ec7);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 18px;
+    box-shadow: 0 4px 12px rgba(233,30,140,0.35);
+  }
+
+  .brand-text h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+    line-height: 1.1;
+  }
+
+  .brand-text span {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+  }
+
+  .meta-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .meta-divider {
+    width: 1px; height: 36px;
+    background: var(--border);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .btn-outline:hover { border-color: var(--pink-primary); color: var(--pink-primary); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #e91e8c, #c2185b);
+    color: white;
+    box-shadow: 0 4px 14px rgba(233,30,140,0.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(233,30,140,0.4); }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: var(--green-light);
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  .status-badge.offline {
+    background: var(--red-light);
+    color: var(--red);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  .status-badge.offline .status-dot { background: var(--red); }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── MAIN LAYOUT ─────────────────────────────────────── */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr 340px;
+    gap: 18px;
+    padding: 20px 24px;
+    height: calc(100vh - 64px);   /* FIX: fixed height so panels scroll */
+    max-width: 1600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow: hidden;             /* FIX: contain columns inside viewport */
+  }
+
+  /* ── CARDS & PANELS ──────────────────────────────────── */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 100%;               /* FIX: fill column height */
+    overflow-y: auto;           /* FIX: scroll within column */
+    overflow-x: hidden;
+    padding-bottom: 20px;       /* FIX: don't clip last card */
+    box-sizing: border-box;
+  }
+
+  /* FIX: scrollbar style - applies to all three panels */
+  .panel::-webkit-scrollbar { width: 5px; }
+  .panel::-webkit-scrollbar-track { background: transparent; }
+  .panel::-webkit-scrollbar-thumb { background: #d8dce6; border-radius: 3px; }
+  .panel::-webkit-scrollbar-thumb:hover { background: #b0b8c8; }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    flex-shrink: 0;             /* FIX: cards never compress/disappear */
+    width: 100%;                /* FIX: always full panel width */
+  }
+
+  .card-header {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;             /* FIX: header never collapses */
+    background: var(--white);  /* FIX: always white, never transparent */
+  }
+
+  .card-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .icon-pink { background: var(--pink-light); color: var(--pink-primary); }
+  .icon-blue { background: var(--blue-soft); color: var(--blue-primary); }
+  .icon-teal { background: var(--teal-light); color: var(--teal); }
+  .icon-amber { background: var(--amber-light); color: var(--amber); }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .card-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .card-body {
+    padding: 16px 18px;
+  }
+
+  /* ── FORM ELEMENTS ───────────────────────────────────── */
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-primary);
+    background: var(--bg);
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--pink-mid);
+    box-shadow: 0 0 0 3px rgba(233,30,140,0.08);
+    background: white;
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .toggle-group {
+    display: flex;
+    gap: 6px;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 7px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all .2s;
+    text-align: center;
+  }
+
+  .toggle-btn.active-yes {
+    background: var(--green-light);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .toggle-btn.active-no {
+    background: var(--red-light);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .slider-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .form-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--pink-primary);
+    box-shadow: 0 2px 8px rgba(233,30,140,0.4);
+    cursor: pointer;
+  }
+
+  .slider-val {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pink-primary);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* ── SYMPTOM CHIPS ───────────────────────────────────── */
+  .symptom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
+  .symptom-chip {
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-secondary);
+    background: var(--bg);
+    transition: all .2s;
+    user-select: none;
+  }
+
+  .symptom-chip:hover { border-color: var(--pink-mid); color: var(--pink-primary); }
+
+  .symptom-chip.active {
+    background: var(--pink-light);
+    border-color: var(--pink-primary);
+    color: var(--pink-primary);
+  }
+
+  .symptom-chip i { font-size: 13px; }
+
+  /* ── IMAGE UPLOAD AREA ───────────────────────────────── */
+  .upload-box {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative;
+    background: var(--bg);
+  }
+
+  .upload-box:hover, .upload-box.dragover {
+    border-color: var(--pink-primary);
+    background: var(--pink-soft);
+  }
+
+  .upload-box input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    width: 44px; height: 44px;
+    margin: 0 auto 10px;
+    background: var(--pink-light);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--pink-primary);
+    font-size: 18px;
+  }
+
+  .upload-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .upload-hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  .upload-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 600;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .image-preview-wrapper {
+    position: relative;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: #0d0d0d;
+  }
+
+  .image-preview {
+    width: 100%;
+    display: block;
+    max-height: 180px;
+    object-fit: cover;
+  }
+
+  .heatmap-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 45% at 55% 48%,
+      rgba(255,60,60,0.55) 0%,
+      rgba(255,120,0,0.35) 35%,
+      rgba(255,200,0,0.15) 60%,
+      transparent 80%);
+    pointer-events: none;
+  }
+
+  .heatmap-marker {
+    position: absolute;
+    top: 40%; left: 48%;
+    width: 32px; height: 32px;
+    border: 2.5px solid #ff3c3c;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: markerPulse 1.5s infinite;
+    box-shadow: 0 0 12px rgba(255,60,60,0.6);
+  }
+
+  @keyframes markerPulse {
+    0%,100% { box-shadow: 0 0 12px rgba(255,60,60,0.6); transform: translate(-50%,-50%) scale(1); }
+    50% { box-shadow: 0 0 24px rgba(255,60,60,0.9); transform: translate(-50%,-50%) scale(1.12); }
+  }
+
+  .image-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.75));
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 18px 10px 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .region-tag {
+    background: rgba(255,60,60,0.9);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+
+  /* ── CENTER PANEL / RESULTS ──────────────────────────── */
+  .result-hero {
+    padding: 20px 18px;
+    background: linear-gradient(135deg, #fce4f3 0%, #e8f4fd 100%);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .prediction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 22px;
+    border-radius: 40px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.2px;
+  }
+
+  .badge-malignant {
+    background: var(--red-light);
+    color: var(--red);
+    border: 2px solid rgba(198,40,40,0.2);
+    box-shadow: 0 4px 16px rgba(198,40,40,0.15);
+  }
+
+  .badge-benign {
+    background: var(--green-light);
+    color: var(--green);
+    border: 2px solid rgba(46,125,50,0.2);
+  }
+
+  .confidence-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 6px;
+  }
+
+  .confidence-val {
+    font-size: 32px;
+    font-family: 'DM Serif Display', serif;
+    color: var(--text-primary);
+    letter-spacing: -1px;
+  }
+
+  .confidence-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* CIRCULAR GAUGE */
+  .gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .gauge-svg { overflow: visible; }
+
+  .gauge-track { fill: none; stroke: var(--border); stroke-width: 10; }
+  .gauge-fill  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
+
+  .gauge-text-val {
+    font-size: 18px;
+    font-weight: 700;
+    fill: var(--text-primary);
+    font-family: 'DM Serif Display', serif;
+  }
+
+  .gauge-text-label {
+    font-size: 8.5px;
+    fill: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* RISK BARS */
+  .risk-bar-wrap { margin-bottom: 10px; }
+
+  .risk-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .risk-bar-label { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
+  .risk-bar-val { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+
+  .risk-bar-track {
+    height: 7px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .risk-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* STAGE INDICATOR */
+  .stage-timeline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .stage-node {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+
+  .stage-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 4px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    transition: all .3s;
+  }
+
+  .stage-dot.active {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245,124,0,0.4);
+  }
+
+  .stage-dot.past {
+    background: var(--pink-primary);
+    border-color: var(--pink-primary);
+    color: white;
+  }
+
+  .stage-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+  .stage-label.active-label { color: var(--amber); font-weight: 600; }
+
+  .stage-connector {
+    flex: 0 0 16px;
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 14px;
+  }
+
+  .stage-connector.filled { background: var(--pink-primary); }
+
+  /* FEATURE BARS */
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .feature-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    width: 110px;
+    flex-shrink: 0;
+    text-transform: capitalize;
+  }
+
+  .feature-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .feature-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--pink-primary), #ff6ec7);
+    transition: width 1.4s cubic-bezier(.4,0,.2,1);
+  }
+
+  .feature-score {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--pink-primary);
+    width: 32px;
+    text-align: right;
+  }
+
+  /* RISK BREAKDOWN */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .breakdown-card {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    text-align: center;
+  }
+
+  .breakdown-source {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .breakdown-pct {
+    font-size: 24px;
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+
+  .breakdown-risk {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  .risk-high { background: var(--red-light); color: var(--red); }
+  .risk-medium { background: var(--amber-light); color: var(--amber); }
+  .risk-low { background: var(--green-light); color: var(--green); }
+
+  /* RECOMMENDATION BOX */
+  .recommendation-box {
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+    border: 1.5px solid rgba(245,124,0,0.2);
+    border-radius: var(--radius-md);
+    position: relative;
+    overflow: visible;          /* FIX: was hidden, clipped the left accent bar */
+    flex-shrink: 0;
+  }
+
+  .recommendation-box::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--amber);
+    border-radius: 2px 0 0 2px;
+  }
+
+  .rec-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .rec-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  .rec-body {
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: #5d4037;
+  }
+
+  .rec-steps {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rec-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #5d4037;
+  }
+
+  .rec-step-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(245,124,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: var(--amber);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* CATEGORY CHIPS ROW */
+  .category-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    margin: 4px 0 20px;
+    padding: 12px 18px;
+    background: var(--blue-soft);
+    border: 1.5px solid rgba(21,101,192,0.15);
+    border-radius: var(--radius-sm);
+    font-size: 11.5px;
+    color: #1565c0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.55;
+    flex-shrink: 0;             /* FIX: never get squeezed out */
+  }
+
+  .disclaimer i { margin-top: 2px; flex-shrink: 0; }
+
+  /* ── MISC UTILS ──────────────────────────────────────── */
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  .small-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .flex-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .run-btn-wrapper {
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+    flex-shrink: 0;
+  }
+
+  .run-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #e91e8c, #c2185b);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    transition: all .2s;
+    box-shadow: 0 4px 16px rgba(233,30,140,0.3);
+    letter-spacing: 0.1px;
+  }
+
+  .run-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(233,30,140,0.45);
+  }
+
+  .run-btn:active { transform: translateY(0); }
+  .run-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+  /* loading spinner */
+  .spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .analyzing .spinner { display: block; }
+  .analyzing .btn-text { display: none; }
+
+  /* patient id input in header */
+  .pid-input {
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: transparent;
+    outline: none;
+    width: 110px;
+  }
+
+  /* results hidden initially */
+  .results-hidden { opacity: 0.3; pointer-events: none; filter: blur(2px); transition: all .4s; }
+  .results-shown  { opacity: 1; pointer-events: all; filter: none; }
+
+  /* section scroll — handled above in .panel definition */
+
+  /* ── TOAST ───────────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    padding: 12px 20px;
+    background: var(--text-primary);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateY(80px);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+  }
+
+  .toast.show { transform: translateY(0); }
+
+  /* ── IMAGE UPLOAD TABS ───────────────────────────────── */
+  .view-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px 0;
+  }
+
+  .view-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    transition: all .2s;
+    background: var(--bg);
+  }
+
+  .view-tab.active {
+    background: var(--pink-primary);
+    border-color: var(--pink-primary);
+    color: white;
+  }
+
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 14px 18px;
+    min-width: 0;               /* FIX: grid children won't overflow */
+  }
+
+  .animate-in {
+    animation: fadeUp .5s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Error state ────────────────────────────── */
+  .error-banner {
+    padding: 12px 18px;
+    background: var(--red-light);
+    border: 1.5px solid rgba(198,40,40,0.2);
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    color: var(--red);
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .error-banner.show { display: flex; }
+
+  /* GradCAM image overlay */
+  .gradcam-img {
+    width: 100%; border-radius: var(--radius-sm);
+    display: block; margin-top: 8px;
+    border: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════ HEADER ════════════════ -->
+<header>
+  <div class="header-brand">
+    <div class="brand-logo"><i class="fas fa-ribbon"></i></div>
+    <div class="brand-text">
+      <h1>Pink Ribbon</h1>
+      <span>AI Breast Cancer Detection System</span>
+    </div>
+  </div>
+
+  <div class="header-meta">
+    <div class="meta-item">
+      <span class="meta-label">Patient ID</span>
+      <input class="pid-input meta-value" id="patientId" value="PT-2024-08831" />
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-item">
+      <span class="meta-label">Attending Physician</span>
+      <span class="meta-value">Dr. Priya Mehra, MD</span>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-item">
+      <span class="meta-label">Session Date</span>
+      <span class="meta-value" id="headerDate">—</span>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="status-badge" id="engineStatus">
+      <span class="status-dot"></span> Connecting…
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="exportReport()"><i class="fas fa-file-medical"></i> Export Report</button>
+    <button class="btn btn-outline"><i class="fas fa-history"></i> History</button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════ MAIN ══════════════════ -->
+<div class="main-layout">
+
+  <!-- ────────────── LEFT PANEL ─────────────── -->
+  <div class="panel" id="leftPanel">
+
+    <!-- Basic Info -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-pink"><i class="fas fa-user-injured"></i></div>
+        <div>
+          <div class="card-title">Patient Information</div>
+          <div class="card-subtitle">Demographics & history</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Age</label>
+            <input class="form-input" type="number" id="age" value="47" min="18" max="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Menopause</label>
+            <select class="form-input" id="menopause">
+              <option>Pre</option>
+              <option selected>Post</option>
+              <option>Peri</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Family History of Cancer</label>
+          <div class="toggle-group" id="familyHistoryGroup">
+            <button class="toggle-btn active-yes" onclick="toggle(this,'family')" data-val="yes">✓ Yes</button>
+            <button class="toggle-btn" onclick="toggle(this,'family')" data-val="no">✗ No</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hormonal Therapy</label>
+          <div class="toggle-group" id="hormonalGroup">
+            <button class="toggle-btn" onclick="toggle(this,'hormone')" data-val="yes">✓ Yes</button>
+            <button class="toggle-btn active-no" onclick="toggle(this,'hormone')" data-val="no">✗ No</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">BRCA Mutation Status</label>
+          <select class="form-input" id="brca">
+            <option>Unknown</option>
+            <option selected>BRCA1 Positive</option>
+            <option>BRCA2 Positive</option>
+            <option>Negative</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tumor Parameters -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-blue"><i class="fas fa-microscope"></i></div>
+        <div>
+          <div class="card-title">Tumor Parameters</div>
+          <div class="card-subtitle">Biopsy & imaging measurements</div>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div class="form-group">
+          <label class="form-label">Radius (mean) <span class="small-meta">mm</span></label>
+          <div class="slider-container">
+            <input class="form-slider" type="range" id="radius" min="6" max="30" value="18.2" step="0.1" oninput="updateSlider(this,'radiusVal')">
+            <span class="slider-val" id="radiusVal">18.2</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Texture (mean)</label>
+          <div class="slider-container">
+            <input class="form-slider" type="range" id="texture" min="9" max="40" value="22.4" step="0.1" oninput="updateSlider(this,'textureVal')">
+            <span class="slider-val" id="textureVal">22.4</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Perimeter (mean) <span class="small-meta">mm</span></label>
+          <div class="slider-container">
+            <input class="form-slider" type="range" id="perimeter" min="40" max="200" value="114" step="0.5" oninput="updateSlider(this,'perimeterVal')">
+            <span class="slider-val" id="perimeterVal">114</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Area (mean) <span class="small-meta">mm²</span></label>
+          <div class="slider-container">
+            <input class="form-slider" type="range" id="area" min="100" max="2600" value="920" step="5" oninput="updateSlider(this,'areaVal')">
+            <span class="slider-val" id="areaVal">920</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Smoothness</label>
+            <input class="form-input" type="number" id="smoothness" value="0.118" step="0.001" min="0" max="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Concavity</label>
+            <input class="form-input" type="number" id="concavity" value="0.241" step="0.001" min="0" max="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Symmetry</label>
+          <div class="slider-container">
+            <input class="form-slider" type="range" id="symmetry" min="0.1" max="0.4" value="0.205" step="0.001" oninput="updateSlider(this,'symmetryVal')">
+            <span class="slider-val" id="symmetryVal">0.205</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Symptoms -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-pink"><i class="fas fa-stethoscope"></i></div>
+        <div>
+          <div class="card-title">Clinical Symptoms</div>
+          <div class="card-subtitle">Select all that apply</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="symptom-grid">
+          <div class="symptom-chip active" onclick="this.classList.toggle('active')" data-symptom="Breast Lump">
+            <i class="fas fa-circle-dot"></i> Breast Lump
+          </div>
+          <div class="symptom-chip" onclick="this.classList.toggle('active')" data-symptom="Breast Pain">
+            <i class="fas fa-bolt"></i> Breast Pain
+          </div>
+          <div class="symptom-chip active" onclick="this.classList.toggle('active')" data-symptom="Nipple Discharge">
+            <i class="fas fa-droplet"></i> Nipple Discharge
+          </div>
+          <div class="symptom-chip" onclick="this.classList.toggle('active')" data-symptom="Skin Changes">
+            <i class="fas fa-layer-group"></i> Skin Changes
+          </div>
+          <div class="symptom-chip" onclick="this.classList.toggle('active')" data-symptom="Nipple Retraction">
+            <i class="fas fa-compress-arrows-alt"></i> Nipple Retraction
+          </div>
+          <div class="symptom-chip" onclick="this.classList.toggle('active')" data-symptom="Lymphadenopathy">
+            <i class="fas fa-circle-nodes"></i> Lymphadenopathy
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyze Button -->
+    <div class="card" style="overflow:visible; border:none; background:transparent; box-shadow:none;">
+      <div id="errorBanner" class="error-banner">
+        <i class="fas fa-circle-exclamation"></i>
+        <span id="errorMsg">Analysis failed. Please check inputs and try again.</span>
+      </div>
+      <button class="run-btn" id="analyzeBtn" onclick="runAnalysis()">
+        <span class="btn-text"><i class="fas fa-brain"></i> Run AI Analysis</span>
+        <span class="spinner" id="spinner"></span>
+      </button>
+    </div>
+
+  </div><!-- /left panel -->
+
+  <!-- ────────────── CENTER PANEL ────────────── -->
+  <div class="panel" id="centerPanel">
+
+    <!-- Prediction Hero -->
+    <div class="card">
+      <div class="result-hero">
+        <div class="prediction-badge badge-malignant" id="predBadge">
+          <i class="fas fa-triangle-exclamation" id="predIcon"></i>
+          <span id="predLabel">AWAITING ANALYSIS</span>
+        </div>
+        <div class="confidence-row">
+          <div>
+            <div class="confidence-val" id="confVal">—</div>
+            <div class="confidence-label">Confidence Score</div>
+          </div>
+        </div>
+        <div class="category-row" style="justify-content:center; margin-top:10px;" id="categoryChips">
+          <span class="cat-chip" style="background:var(--border);color:var(--text-muted);">Run analysis to see results</span>
+        </div>
+      </div>
+
+      <!-- Metrics row -->
+      <div class="card-body" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding: 18px;">
+
+        <!-- Risk Gauge -->
+        <div style="text-align:center;">
+          <svg class="gauge-svg" width="100" height="100" viewBox="0 0 100 100" id="riskGaugeSvg">
+            <circle class="gauge-track" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+            <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="40"
+              stroke="#e91e8c"
+              stroke-dasharray="0 251"
+              stroke-dashoffset="0"
+              transform="rotate(-90 50 50)"/>
+            <text x="50" y="46" text-anchor="middle" class="gauge-text-val" id="gaugeVal">—</text>
+            <text x="50" y="60" text-anchor="middle" class="gauge-text-label">Risk Score</text>
+          </svg>
+        </div>
+
+        <!-- Precision & Recall mini stats -->
+        <div style="display:flex; flex-direction:column; justify-content:center; gap:12px;">
+          <div>
+            <div class="small-meta">Model Precision</div>
+            <div style="font-size:20px; font-family:'DM Serif Display',serif; color:var(--text-primary);" id="metricPrecision">—</div>
+          </div>
+          <div>
+            <div class="small-meta">Sensitivity (Recall)</div>
+            <div style="font-size:20px; font-family:'DM Serif Display',serif; color:var(--text-primary);" id="metricRecall">—</div>
+          </div>
+        </div>
+
+        <!-- AUC -->
+        <div style="display:flex; flex-direction:column; justify-content:center; gap:12px;">
+          <div>
+            <div class="small-meta">AUC Score</div>
+            <div style="font-size:20px; font-family:'DM Serif Display',serif; color:var(--text-primary);" id="metricAUC">—</div>
+          </div>
+          <div>
+            <div class="small-meta">Specificity</div>
+            <div style="font-size:20px; font-family:'DM Serif Display',serif; color:var(--text-primary);" id="metricSpecificity">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk Breakdown -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-pink"><i class="fas fa-chart-pie"></i></div>
+        <div>
+          <div class="card-title">Risk Breakdown</div>
+          <div class="card-subtitle">Clinical vs. Imaging model contributions</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="breakdown-grid">
+          <div class="breakdown-card" style="border-color:rgba(233,30,140,0.25); background:var(--pink-soft);">
+            <div class="breakdown-source"><i class="fas fa-vials"></i> Clinical Data</div>
+            <div class="breakdown-pct" style="color:var(--pink-primary);" id="clinicalPct">—</div>
+            <span class="breakdown-risk" id="clinicalRisk">—</span>
+          </div>
+          <div class="breakdown-card" style="border-color:rgba(245,124,0,0.25); background:var(--amber-light);">
+            <div class="breakdown-source"><i class="fas fa-x-ray"></i> Imaging (AI)</div>
+            <div class="breakdown-pct" style="color:var(--amber);" id="imagingPct">N/A</div>
+            <span class="breakdown-risk" id="imagingRisk">No Image</span>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-header">
+            <span class="risk-bar-label">Malignancy Probability</span>
+            <span class="risk-bar-val" id="malignancyPctVal">—</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="malignancyBar" style="width:0%; background:linear-gradient(90deg,#c62828,#e91e8c);"></div>
+          </div>
+        </div>
+
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-header">
+            <span class="risk-bar-label">Invasiveness Score</span>
+            <span class="risk-bar-val" id="invasivenessVal">—</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="invasivenessBar" style="width:0%; background:linear-gradient(90deg,#f57c00,#ffa726);"></div>
+          </div>
+        </div>
+
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-header">
+            <span class="risk-bar-label">Metastatic Risk</span>
+            <span class="risk-bar-val" id="metastaticVal">—</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="metastaticBar" style="width:0%; background:linear-gradient(90deg,#1565c0,#42a5f5);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tumor Stage -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-amber"><i class="fas fa-timeline"></i></div>
+        <div>
+          <div class="card-title">Tumor Stage Assessment</div>
+          <div class="card-subtitle">TNM Classification</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="stage-timeline" id="stageTimeline">
+          <!-- Rendered by JS -->
+        </div>
+        <div style="margin-top:14px; padding:10px 12px; background:var(--amber-light); border-radius:var(--radius-sm); font-size:12px; color:#5d4037;" id="stageDesc">
+          Run analysis to estimate tumor stage.
+        </div>
+      </div>
+    </div>
+
+    <!-- Explainability -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-teal"><i class="fas fa-lightbulb"></i></div>
+        <div>
+          <div class="card-title">AI Explainability (SHAP)</div>
+          <div class="card-subtitle">Top contributing features to prediction</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="featureBars">
+          <div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">
+            Feature importance will appear after analysis.
+          </div>
+        </div>
+        <div style="margin-top:6px; padding:10px 12px; background:var(--teal-light); border-radius:var(--radius-sm); font-size:12px; color:#004d40; display:flex; gap:8px; align-items:flex-start;">
+          <i class="fas fa-info-circle" style="margin-top:2px;"></i>
+          <span id="shapNote">SHAP values indicate each feature's contribution to the final prediction.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="recommendation-box animate-in" id="recBox">
+      <div class="rec-header">
+        <i class="fas fa-user-doctor" style="color:var(--amber); font-size:16px;"></i>
+        <span class="rec-title">Clinical Recommendation</span>
+        <span style="margin-left:auto; font-size:11px; color:#8d6e63; font-weight:500;">AI-Assisted · Physician Review Required</span>
+      </div>
+      <div class="rec-body" id="recSummary">
+        Run AI analysis to receive a personalised clinical recommendation.
+      </div>
+      <div class="rec-steps" id="recSteps">
+        <!-- Steps rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <i class="fas fa-shield-halved"></i>
+      <span><strong>Clinical Disclaimer:</strong> This AI system is intended as a decision-support tool only. All findings and recommendations must be reviewed, validated, and confirmed by a qualified medical professional before any clinical decisions are made. <strong>For educational use only, not medical diagnosis.</strong></span>
+    </div>
+
+  </div><!-- /center panel -->
+
+  <!-- ────────────── RIGHT PANEL ─────────────── -->
+  <div class="panel" id="rightPanel">
+
+    <!-- Image Upload -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-blue"><i class="fas fa-x-ray"></i></div>
+        <div>
+          <div class="card-title">Mammography Images</div>
+          <div class="card-subtitle">Upload DICOM or JPEG/PNG</div>
+        </div>
+      </div>
+
+      <div class="view-tabs">
+        <button class="view-tab active" onclick="switchTab(this,'cc')">CC View</button>
+        <button class="view-tab" onclick="switchTab(this,'mlo')">MLO View</button>
+        <button class="view-tab" onclick="switchTab(this,'us')">Ultrasound</button>
+      </div>
+
+      <div class="upload-grid">
+        <!-- CC Upload -->
+        <div>
+          <div class="upload-box" id="ccUpload" ondragover="dragOver(event,this)" ondragleave="dragLeave(this)" ondrop="dropFile(event,this,'cc')">
+            <input type="file" id="ccFileInput" accept="image/*,.dcm" onchange="handleFileInput(this,'cc')">
+            <div class="upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+            <div class="upload-label">CC View</div>
+            <div class="upload-hint">Drag & drop or click</div>
+            <div class="upload-badge">Cranio-Caudal</div>
+          </div>
+          <div id="ccPreview" style="display:none; margin-top:10px;">
+            <div class="image-preview-wrapper">
+              <img class="image-preview" id="ccImg" src="" alt="CC View">
+              <div class="heatmap-overlay" id="ccHeatmap"></div>
+              <div class="heatmap-marker" id="ccMarker"></div>
+              <div class="image-caption">
+                <span class="region-tag">Uploaded</span>
+                <span id="ccCaption">Awaiting analysis</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MLO Upload -->
+        <div>
+          <div class="upload-box" id="mloUpload" ondragover="dragOver(event,this)" ondragleave="dragLeave(this)" ondrop="dropFile(event,this,'mlo')">
+            <input type="file" id="mloFileInput" accept="image/*,.dcm" onchange="handleFileInput(this,'mlo')">
+            <div class="upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+            <div class="upload-label">MLO View</div>
+            <div class="upload-hint">Drag & drop or click</div>
+            <div class="upload-badge">Medio-Lateral</div>
+          </div>
+          <div id="mloPreview" style="display:none; margin-top:10px;">
+            <div class="image-preview-wrapper">
+              <img class="image-preview" id="mloImg" src="" alt="MLO View">
+              <div class="heatmap-overlay" style="background: radial-gradient(ellipse 55% 50% at 60% 45%, rgba(255,60,60,0.5) 0%, rgba(255,120,0,0.3) 35%, rgba(255,200,0,0.12) 60%, transparent 80%);"></div>
+              <div class="heatmap-marker" style="top:38%; left:55%;"></div>
+              <div class="image-caption">
+                <span class="region-tag">Uploaded</span>
+                <span id="mloCaption">Awaiting analysis</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image AI Analysis -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-pink"><i class="fas fa-wand-magic-sparkles"></i></div>
+        <div>
+          <div class="card-title">Image AI Analysis</div>
+          <div class="card-subtitle">Radiomics & deep learning findings</div>
+        </div>
+      </div>
+      <div class="card-body" id="imageAnalysisBody">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+
+          <div id="biradsBanner" style="padding:10px 14px; border-radius:var(--radius-sm); background:var(--border); border:1.5px solid var(--border);">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+              <i class="fas fa-image"></i> Image Analysis
+            </div>
+            <div style="font-size:12.5px; color:var(--text-secondary);">Upload a mammography image to see AI findings.</div>
+          </div>
+
+          <div class="risk-bar-wrap">
+            <div class="risk-bar-header">
+              <span class="risk-bar-label">Mass Density</span>
+              <span class="risk-bar-val" id="radiomicsDensityVal">—</span>
+            </div>
+            <div class="risk-bar-track">
+              <div class="risk-bar-fill" id="radiomicsDensityBar" style="width:0%; background:linear-gradient(90deg,#c62828,#e53935);"></div>
+            </div>
+          </div>
+
+          <div class="risk-bar-wrap">
+            <div class="risk-bar-header">
+              <span class="risk-bar-label">Margin Irregularity</span>
+              <span class="risk-bar-val" id="radiomicsMarginVal">—</span>
+            </div>
+            <div class="risk-bar-track">
+              <div class="risk-bar-fill" id="radiomicsMarginBar" style="width:0%; background:linear-gradient(90deg,#e91e8c,#ff6ec7);"></div>
+            </div>
+          </div>
+
+          <div class="risk-bar-wrap">
+            <div class="risk-bar-header">
+              <span class="risk-bar-label">Calcification Pattern</span>
+              <span class="risk-bar-val" id="radiomicsCalcVal">—</span>
+            </div>
+            <div class="risk-bar-track">
+              <div class="risk-bar-fill" id="radiomicsCalcBar" style="width:0%; background:linear-gradient(90deg,#f57c00,#ffa726);"></div>
+            </div>
+          </div>
+
+          <div class="risk-bar-wrap">
+            <div class="risk-bar-header">
+              <span class="risk-bar-label">Lesion Echogenicity</span>
+              <span class="risk-bar-val" id="radiomicsEchoVal">—</span>
+            </div>
+            <div class="risk-bar-track">
+              <div class="risk-bar-fill" id="radiomicsEchoBar" style="width:0%; background:linear-gradient(90deg,#1565c0,#42a5f5);"></div>
+            </div>
+          </div>
+
+          <!-- Grad-CAM output -->
+          <div id="gradcamSection" style="display:none;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+              <i class="fas fa-fire"></i> Grad-CAM Activation Map
+            </div>
+            <img id="gradcamImg" class="gradcam-img" src="" alt="Grad-CAM">
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+              Red/yellow regions indicate areas of highest model attention.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Processing Info -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-teal"><i class="fas fa-microchip"></i></div>
+        <div>
+          <div class="card-title">Processing Details</div>
+          <div class="card-subtitle">Model & inference metadata</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border);">
+            <span class="small-meta">Vision Model</span>
+            <span style="font-size:12.5px; font-weight:600; color:var(--teal);" id="visionModelLabel">MobileNetV2 + Grad-CAM</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border);">
+            <span class="small-meta">Clinical Model</span>
+            <span style="font-size:12.5px; font-weight:600; color:var(--teal);" id="clinicalModelLabel">Loading…</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border);">
+            <span class="small-meta">Fusion Strategy</span>
+            <span style="font-size:12.5px; font-weight:600;" id="fusionLabel">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border);">
+            <span class="small-meta">Inference Time</span>
+            <span style="font-size:12.5px; font-weight:600;" id="inferenceTime">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0;">
+            <span class="small-meta">Training Dataset</span>
+            <span style="font-size:12.5px; font-weight:600;">Wisconsin + CBIS-DDSM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-model comparison -->
+    <div class="card" id="modelCompCard" style="display:none;">
+      <div class="card-header">
+        <div class="card-icon icon-amber"><i class="fas fa-chart-bar"></i></div>
+        <div>
+          <div class="card-title">Model Comparison</div>
+          <div class="card-subtitle">All trained classifiers</div>
+        </div>
+      </div>
+      <div class="card-body" id="modelCompBody">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </div><!-- /right panel -->
+
+</div><!-- /main-layout -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle" id="toastIcon"></i>
+  <span id="toastMsg">Analysis complete</span>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   Pink Ribbon Frontend JS
+   Integrates with Flask backend at /api/analyze
+══════════════════════════════════════════════════════════ */
+
+// ── Uploaded file objects ──────────────────────────────────
+let uploadedFiles = { cc: null, mlo: null };
+let lastResult    = null;
+
+// ── Init ──────────────────────────────────────────────────
+const now = new Date();
+document.getElementById('headerDate').textContent =
+  now.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) +
+  ' · ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+
+// Render initial stage timeline
+renderStageTimeline({ active_stages: [] });
+
+// ── Health check ──────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r   = await fetch('/api/health');
+    const d   = await r.json();
+    const el  = document.getElementById('engineStatus');
+    if (d.status === 'online') {
+      el.innerHTML = '<span class="status-dot"></span> AI Engine Online';
+      el.classList.remove('offline');
+      document.getElementById('clinicalModelLabel').textContent = d.text_model ? 'Loaded ✓' : 'Training…';
+    } else {
+      el.innerHTML = '<span class="status-dot"></span> Engine Offline';
+      el.classList.add('offline');
+    }
+  } catch {
+    const el = document.getElementById('engineStatus');
+    el.innerHTML = '<span class="status-dot"></span> Connecting…';
+  }
+}
+checkHealth();
+setInterval(checkHealth, 30000);
+
+// ── Toggle buttons ────────────────────────────────────────
+function toggle(btn, group) {
+  const siblings = btn.parentElement.querySelectorAll('.toggle-btn');
+  siblings.forEach(b => b.classList.remove('active-yes','active-no'));
+  btn.classList.add(btn.dataset.val === 'yes' ? 'active-yes' : 'active-no');
+}
+
+function getToggleVal(groupId) {
+  const active = document.querySelector(`#${groupId} .toggle-btn.active-yes, #${groupId} .toggle-btn.active-no`);
+  if (!active) return 'no';
+  return active.classList.contains('active-yes') ? 'yes' : 'no';
+}
+
+// ── Slider ────────────────────────────────────────────────
+function updateSlider(el, valId) {
+  document.getElementById(valId).textContent = el.value;
+}
+
+// ── Image Upload ──────────────────────────────────────────
+function handleFileInput(input, view) {
+  const file = input.files[0];
+  if (!file) return;
+  uploadedFiles[view] = file;
+  const reader = new FileReader();
+  reader.onload = e => showPreview(view, e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function dropFile(e, box, view) {
+  e.preventDefault();
+  box.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  uploadedFiles[view] = file;
+  const reader = new FileReader();
+  reader.onload = ev => showPreview(view, ev.target.result);
+  reader.readAsDataURL(file);
+}
+
+function showPreview(view, src) {
+  document.getElementById(view + 'Img').src = src;
+  document.getElementById(view + 'Preview').style.display = 'block';
+  document.getElementById(view + 'Upload').style.display = 'none';
+  showToast('Image uploaded — ready for analysis', 'info');
+}
+
+function dragOver(e, box)  { e.preventDefault(); box.classList.add('dragover'); }
+function dragLeave(box)    { box.classList.remove('dragover'); }
+
+// ── Tab ───────────────────────────────────────────────────
+function switchTab(btn, id) {
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Collect form data ─────────────────────────────────────
+function collectFormData() {
+  const symptoms = Array.from(
+    document.querySelectorAll('.symptom-chip.active')
+  ).map(c => c.dataset.symptom || c.textContent.trim());
+
+  return {
+    age:              document.getElementById('age').value,
+    menopause:        document.getElementById('menopause').value,
+    brca_status:      document.getElementById('brca').value,
+    radius:           document.getElementById('radius').value,
+    texture:          document.getElementById('texture').value,
+    perimeter:        document.getElementById('perimeter').value,
+    area:             document.getElementById('area').value,
+    smoothness:       document.getElementById('smoothness').value,
+    concavity:        document.getElementById('concavity').value,
+    symmetry:         document.getElementById('symmetry').value,
+    family_history:   getToggleVal('familyHistoryGroup'),
+    hormonal_therapy: getToggleVal('hormonalGroup'),
+    symptoms:         JSON.stringify(symptoms),
+    patient_id:       document.getElementById('patientId').value,
+  };
+}
+
+// ── MAIN: Run Analysis ────────────────────────────────────
+async function runAnalysis() {
+  const btn = document.getElementById('analyzeBtn');
+  btn.classList.add('analyzing');
+  btn.disabled = true;
+  hideError();
+
+  try {
+    const formData = new FormData();
+    const fields   = collectFormData();
+    Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
+
+    // Attach image (prefer cc, fallback to mlo)
+    if (uploadedFiles.cc) {
+      formData.append('cc_image', uploadedFiles.cc, uploadedFiles.cc.name);
+    } else if (uploadedFiles.mlo) {
+      formData.append('mlo_image', uploadedFiles.mlo, uploadedFiles.mlo.name);
+    }
+
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      body:   formData,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(err.message || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.status !== 'success') throw new Error(result.message || 'Unknown error');
+
+    lastResult = result;
+    renderResults(result);
+    showToast('✓ AI Analysis complete — Review results', 'success');
+
+  } catch (err) {
+    showError(err.message);
+    showToast('Analysis failed: ' + err.message, 'error');
+  } finally {
+    btn.classList.remove('analyzing');
+    btn.disabled = false;
+  }
+}
+
+// ── Render full results ───────────────────────────────────
+function renderResults(r) {
+  // ─ Prediction badge ─────────────────────────────────────
+  const badge    = document.getElementById('predBadge');
+  const label    = document.getElementById('predLabel');
+  const icon     = document.getElementById('predIcon');
+  const confVal  = document.getElementById('confVal');
+
+  const isMalignant = r.prediction === 'Malignant';
+  badge.className   = 'prediction-badge ' + (isMalignant ? 'badge-malignant' : 'badge-benign');
+  label.textContent = r.prediction.toUpperCase();
+  icon.className    = isMalignant ? 'fas fa-triangle-exclamation' : 'fas fa-circle-check';
+  confVal.textContent = r.confidence + '%';
+
+  // ─ Category chips ────────────────────────────────────────
+  const chips    = document.getElementById('categoryChips');
+  const catColor = r.risk_category === 'High' ? 'risk-high' :
+                   r.risk_category === 'Medium' ? 'risk-medium' : 'risk-low';
+  const catEmoji = r.risk_category === 'High' ? '🔴' : r.risk_category === 'Medium' ? '🟡' : '🟢';
+  chips.innerHTML = `
+    <span class="cat-chip ${catColor}">${catEmoji} ${r.risk_category} Risk</span>
+    <span class="cat-chip" style="background:var(--amber-light);color:var(--amber);">
+      ⚠️ ${r.stage_estimate ? 'Stage ' + (r.stage_estimate.stage || '—') : 'Stage —'}
+    </span>
+    <span class="cat-chip" style="background:var(--blue-soft);color:var(--blue-primary);">
+      📊 ${r.text_model.best_model || 'ML Model'}
+    </span>`;
+
+  // ─ Gauge ─────────────────────────────────────────────────
+  const score = r.risk_score || 0;
+  updateGauge(score);
+
+  // ─ Metrics ───────────────────────────────────────────────
+  const m = r.text_model.metrics || {};
+  document.getElementById('metricPrecision').textContent = m.precision ? m.precision + '%' : '—';
+  document.getElementById('metricRecall').textContent    = m.recall    ? m.recall    + '%' : '—';
+  document.getElementById('metricAUC').textContent       = m.auc       ? (m.auc / 100).toFixed(3) : '—';
+  document.getElementById('metricSpecificity').textContent = '—';
+
+  // ─ Risk breakdown bars ───────────────────────────────────
+  const rb = r.risk_breakdown || {};
+  const clinPct = rb.clinical_risk || 0;
+  const imgPct  = rb.imaging_risk  || null;
+
+  document.getElementById('clinicalPct').textContent = Math.round(clinPct) + '%';
+  document.getElementById('clinicalRisk').textContent = riskLabel(clinPct);
+  document.getElementById('clinicalRisk').className   = 'breakdown-risk ' + riskClass(clinPct);
+
+  if (imgPct !== null) {
+    document.getElementById('imagingPct').textContent   = Math.round(imgPct) + '%';
+    document.getElementById('imagingRisk').textContent  = riskLabel(imgPct);
+    document.getElementById('imagingRisk').className    = 'breakdown-risk ' + riskClass(imgPct);
+  }
+
+  animateBar('malignancyBar',  rb.malignancy_probability || 0);
+  animateBar('invasivenessBar', rb.invasiveness_score    || 0);
+  animateBar('metastaticBar',  rb.metastatic_risk        || 0);
+  document.getElementById('malignancyPctVal').textContent = Math.round(rb.malignancy_probability || 0) + '%';
+  document.getElementById('invasivenessVal').textContent  = Math.round(rb.invasiveness_score    || 0) + '%';
+  document.getElementById('metastaticVal').textContent    = Math.round(rb.metastatic_risk       || 0) + '%';
+
+  // ─ Stage ─────────────────────────────────────────────────
+  if (r.stage_estimate) {
+    renderStageTimeline(r.stage_estimate);
+    document.getElementById('stageDesc').innerHTML =
+      `<strong>${r.stage_estimate.tnm || ''}</strong> — ${r.stage_estimate.desc || ''}`;
+  }
+
+  // ─ Feature importance ────────────────────────────────────
+  renderFeatureBars(r.text_model.feature_importance || []);
+
+  // ─ Recommendation ────────────────────────────────────────
+  const rec = r.recommendation || {};
+  document.getElementById('recSummary').textContent = rec.summary || '';
+  const stepsEl = document.getElementById('recSteps');
+  stepsEl.innerHTML = (rec.steps || []).map((s, i) => `
+    <div class="rec-step">
+      <div class="rec-step-icon">${i+1}</div>
+      <span>${s}</span>
+    </div>`).join('');
+
+  // ─ Processing metadata ───────────────────────────────────
+  document.getElementById('clinicalModelLabel').textContent = r.text_model.best_model || '—';
+  document.getElementById('fusionLabel').textContent        = r.fusion.fusion_method  || '—';
+  document.getElementById('inferenceTime').textContent      = r.inference_time + 's';
+
+  // ─ Image AI analysis ─────────────────────────────────────
+  if (r.image_model && r.image_model.available) {
+    const rad = r.image_model.radiomics || {};
+    updateRadiomicsBar('density', rad.mass_density);
+    updateRadiomicsBar('margin',  rad.margin_irregularity);
+    updateRadiomicsBar('calc',    rad.calcification);
+    updateRadiomicsBar('echo',    rad.echogenicity);
+
+    const biradsPct  = Math.round(r.image_model.probability || 0);
+    const biradsEl   = document.getElementById('biradsBanner');
+    const color      = biradsPct > 65 ? 'var(--red)' : biradsPct > 35 ? 'var(--amber)' : 'var(--green)';
+    const bg         = biradsPct > 65 ? 'var(--red-light)' : biradsPct > 35 ? 'var(--amber-light)' : 'var(--green-light)';
+    const borderCol  = biradsPct > 65 ? 'rgba(198,40,40,0.2)' : biradsPct > 35 ? 'rgba(245,124,0,0.2)' : 'rgba(46,125,50,0.2)';
+    biradsEl.style.background   = bg;
+    biradsEl.style.border       = `1.5px solid ${borderCol}`;
+    biradsEl.innerHTML = `
+      <div style="font-size:11px; color:${color}; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+        <i class="fas fa-wand-magic-sparkles"></i> Image Model: ${r.image_model.prediction}
+      </div>
+      <div style="font-size:12.5px; color:#5d0000;">
+        Image-based malignancy probability: <strong>${biradsPct}%</strong>
+      </div>`;
+
+    // Grad-CAM
+    if (r.image_model.gradcam) {
+      const gcSection = document.getElementById('gradcamSection');
+      const gcImg     = document.getElementById('gradcamImg');
+      gcImg.src    = 'data:image/png;base64,' + r.image_model.gradcam;
+      gcSection.style.display = 'block';
+    }
+
+    // Update CC & MLO preview captions
+    document.getElementById('ccCaption').textContent =
+      `${r.image_model.prediction} · ${biradsPct}% probability`;
+    const mloCapEl = document.getElementById('mloCaption');
+    if (mloCapEl) mloCapEl.textContent = `${r.image_model.prediction} · ${biradsPct}% probability`;
+    if (r.image_model.prediction === 'Malignant') {
+      document.getElementById('ccHeatmap').style.display = 'block';
+      document.getElementById('ccMarker').style.display  = 'block';
+    }
+  }
+
+  // ─ Model comparison card ─────────────────────────────────
+  const allModels = r.text_model.all_models || {};
+  if (Object.keys(allModels).length > 1) {
+    renderModelComparison(allModels);
+    document.getElementById('modelCompCard').style.display = 'block';
+  }
+}
+
+// ── Gauge ────────────────────────────────────────────────
+function updateGauge(score) {
+  const circ     = 2 * Math.PI * 40;  // 251.3
+  const fillLen  = (score / 100) * circ;
+  const fill     = document.getElementById('gaugeFill');
+  fill.setAttribute('stroke-dasharray', `${fillLen} ${circ}`);
+  fill.setAttribute('stroke', score > 65 ? '#e91e8c' : score > 35 ? '#f57c00' : '#2e7d32');
+  document.getElementById('gaugeVal').textContent = Math.round(score);
+}
+
+// ── Animate bar ──────────────────────────────────────────
+function animateBar(id, pct) {
+  const el = document.getElementById(id);
+  if (el) setTimeout(() => { el.style.width = Math.min(pct, 100) + '%'; }, 80);
+}
+
+// ── Feature bars ─────────────────────────────────────────
+function renderFeatureBars(features) {
+  const wrap = document.getElementById('featureBars');
+  if (!features || !features.length) {
+    wrap.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:10px;">No feature data available.</div>';
+    return;
+  }
+  wrap.innerHTML = features.slice(0, 8).map(f => `
+    <div class="feature-item">
+      <span class="feature-name">${f.name}</span>
+      <div class="feature-bar-track">
+        <div class="feature-bar-fill" style="width:0%" data-target="${f.score}"></div>
+      </div>
+      <span class="feature-score">${f.score}</span>
+    </div>`).join('');
+  // Animate
+  setTimeout(() => {
+    wrap.querySelectorAll('.feature-bar-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 120);
+}
+
+// ── Stage timeline ────────────────────────────────────────
+function renderStageTimeline(stageData) {
+  const el = document.getElementById('stageTimeline');
+  const active = stageData.active_stages || [];
+  const stages = [
+    { num: 1, label: 'Stage I',   sub: 'T1' },
+    { num: 2, label: 'Stage II',  sub: 'T2–T3' },
+    { num: 3, label: 'Stage III', sub: 'N2–N3' },
+    { num: 4, label: 'Stage IV',  sub: 'M1' },
+  ];
+
+  const maxActive = active.length ? Math.max(...active) : 0;
+
+  el.innerHTML = stages.map((s, i) => {
+    const isPast   = active.includes(s.num) && s.num < maxActive;
+    const isActive = s.num === maxActive && active.length;
+    const cls      = isPast ? 'stage-dot past' : isActive ? 'stage-dot active' : 'stage-dot';
+    const lblCls   = isActive ? 'stage-label active-label' : 'stage-label';
+    const connector = i < stages.length - 1
+      ? `<div class="stage-connector${isPast ? ' filled' : ''}"></div>`
+      : '';
+    return `
+      <div class="stage-node">
+        <div class="${cls}">${s.num}</div>
+        <div class="${lblCls}">${s.label}<br><span style="font-size:9.5px;">${s.sub}</span></div>
+      </div>${connector}`;
+  }).join('');
+}
+
+// ── Radiomics bars ───────────────────────────────────────
+function updateRadiomicsBar(key, data) {
+  if (!data) return;
+  const keyMap = { density: 'Density', margin: 'Margin', calc: 'Calc', echo: 'Echo' };
+  const valEl  = document.getElementById('radiomics' + keyMap[key] + 'Val');
+  const barEl  = document.getElementById('radiomics' + keyMap[key] + 'Bar');
+  if (valEl) valEl.textContent = data.value || '—';
+  if (barEl) animateBar('radiomics' + keyMap[key] + 'Bar', data.score || 0);
+}
+
+// ── Model comparison ─────────────────────────────────────
+function renderModelComparison(models) {
+  const body  = document.getElementById('modelCompBody');
+  const sorted = Object.entries(models).sort((a,b) => b[1]-a[1]);
+  body.innerHTML = sorted.map(([name, prob]) => `
+    <div class="feature-item">
+      <span class="feature-name" style="width:130px;">${name}</span>
+      <div class="feature-bar-track">
+        <div class="feature-bar-fill" style="width:0%; background:linear-gradient(90deg,var(--pink-primary),#ff6ec7);" data-target="${Math.min(prob,100)}"></div>
+      </div>
+      <span class="feature-score">${prob}%</span>
+    </div>`).join('');
+  setTimeout(() => {
+    body.querySelectorAll('.feature-bar-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 120);
+}
+
+// ── Risk helpers ─────────────────────────────────────────
+function riskLabel(pct) {
+  return pct >= 65 ? 'High Risk' : pct >= 30 ? 'Medium Risk' : 'Low Risk';
+}
+function riskClass(pct) {
+  return pct >= 65 ? 'risk-high' : pct >= 30 ? 'risk-medium' : 'risk-low';
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const t    = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  icon.className = type === 'error' ? 'fas fa-circle-xmark' :
+                   type === 'info'  ? 'fas fa-circle-info' :
+                                      'fas fa-check-circle';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+// ── Error banner ─────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  document.getElementById('errorMsg').textContent = msg;
+  el.classList.add('show');
+}
+function hideError() {
+  document.getElementById('errorBanner').classList.remove('show');
+}
+
+// ── Export Report ─────────────────────────────────────────
+// ── Export Report (PDF) ───────────────────────────────────
+async function exportReport() {
+  if (!lastResult) {
+    showToast('Run analysis first before exporting.', 'info');
+    return;
+  }
+  showToast('Generating PDF report…', 'info');
+
+  if (!window.jsPDF) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc  = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const r    = lastResult;
+  const pid  = document.getElementById('patientId').value || 'PT-UNKNOWN';
+  const now  = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'2-digit' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+
+  const W = 210, M = 16;
+  let y = 0;
+
+  function checkPage(needed = 10) {
+    if (y + needed > 275) { doc.addPage(); y = 20; }
+  }
+  function drawRect(x, yw, w, h, r2, col) {
+    doc.setFillColor(...col);
+    doc.roundedRect(x, yw, w, h, r2, r2, 'F');
+  }
+  function sectionHeader(title) {
+    checkPage(14);
+    drawRect(M, y, W - M*2, 9, 2, [245, 228, 243]);
+    doc.setFont('helvetica','bold').setFontSize(9).setTextColor(160, 20, 100);
+    doc.text(title.toUpperCase(), M + 4, y + 6.2);
+    y += 12;
+  }
+  function labelVal(label, val) {
+    checkPage(7);
+    doc.setFont('helvetica','normal').setFontSize(8.5).setTextColor(110,110,120);
+    doc.text(label, M + 2, y);
+    doc.setFont('helvetica','bold').setFontSize(8.5).setTextColor(30,30,30);
+    doc.text(String(val ?? '—'), M + 58, y);
+    y += 6;
+  }
+  function twoCol(pairs) {
+    const cx = [M + 2, M + 96];
+    pairs.forEach(([l, v], i) => {
+      const col = i % 2;
+      if (col === 0 && i > 0) y += 6;
+      doc.setFont('helvetica','normal').setFontSize(8).setTextColor(110,110,120);
+      doc.text(l, cx[col], y);
+      doc.setFont('helvetica','bold').setFontSize(8).setTextColor(30,30,30);
+      doc.text(String(v ?? '—'), cx[col] + 42, y);
+      if (col === 1) y += 6;
+    });
+    if (pairs.length % 2 !== 0) y += 6;
+  }
+  function divider() {
+    checkPage(5);
+    doc.setDrawColor(230,225,235).setLineWidth(0.25);
+    doc.line(M, y, W - M, y);
+    y += 4;
+  }
+  function progressBar(label, pct, color) {
+    checkPage(9);
+    pct = Math.min(Math.max(pct || 0, 0), 100);
+    const barW = W - M*2 - 50;
+    doc.setFont('helvetica','normal').setFontSize(8).setTextColor(90,90,100);
+    doc.text(label, M + 2, y + 3.5);
+    doc.setFillColor(235,235,240);
+    doc.roundedRect(M + 50, y, barW, 4.5, 2, 2, 'F');
+    doc.setFillColor(...color);
+    if (pct > 0) doc.roundedRect(M + 50, y, barW * pct / 100, 4.5, 2, 2, 'F');
+    doc.setFont('helvetica','bold').setFontSize(8).setTextColor(...color);
+    doc.text(Math.round(pct) + '%', W - M - 2, y + 3.5, { align:'right' });
+    y += 8;
+  }
+  function riskColor(pct) {
+    return pct >= 65 ? [198,40,40] : pct >= 30 ? [245,124,0] : [46,125,50];
+  }
+
+  // Header
+  drawRect(0, 0, W, 36, 0, [233, 30, 140]);
+  doc.setFont('helvetica','bold').setFontSize(16).setTextColor(255,255,255);
+  doc.text('Pink Ribbon', M + 22, 13);
+  doc.setFontSize(8.5).setFont('helvetica','normal').setTextColor(255,220,240);
+  doc.text('AI-Based Breast Cancer Detection Report', M + 22, 19.5);
+  doc.setFontSize(7.5).setTextColor(255,235,248);
+  doc.text(`Report Date: ${dateStr}  ${timeStr}`, W - M, 11, { align:'right' });
+  doc.text(`Patient ID: ${pid}`, W - M, 17, { align:'right' });
+  doc.text('Attending: Dr. Priya Mehra, MD', W - M, 23, { align:'right' });
+  doc.text('Confidential — For Clinical Use Only', W - M, 29, { align:'right' });
+  y = 44;
+
+  // Diagnosis banner
+  const fusion    = r.fusion || {};
+  const finalPred = r.prediction || fusion.final_prediction || 'Unknown';
+  const confScore = Math.round(r.confidence || fusion.final_score_pct || 0);
+  const riskCat   = r.risk_category || fusion.risk_category || 'Unknown';
+  const isMal     = finalPred === 'Malignant' || finalPred === 1;
+  const bannerBg  = isMal ? [255,235,235] : [232,245,233];
+  const bannerTxt = isMal ? [180,20,20]   : [30,100,35];
+  const bannerBdr = isMal ? [220,150,150] : [150,200,155];
+  drawRect(M, y, W - M*2, 22, 3, bannerBg);
+  doc.setDrawColor(...bannerBdr).setLineWidth(0.4);
+  doc.roundedRect(M, y, W - M*2, 22, 3, 3, 'S');
+  doc.setFont('helvetica','bold').setFontSize(15).setTextColor(...bannerTxt);
+  doc.text(isMal ? '⚠  MALIGNANT DETECTED' : '✓  BENIGN — LOW RISK', M + 6, y + 9);
+  doc.setFontSize(8.5).setFont('helvetica','normal').setTextColor(...bannerTxt);
+  doc.text(`AI Confidence: ${confScore}%   ·   Risk Category: ${riskCat}   ·   Fusion Score: ${Math.round((fusion.final_score||0)*100 || confScore)}%`, M + 6, y + 16);
+  y += 28;
+
+  // Patient info
+  sectionHeader('Patient Information');
+  const age        = document.getElementById('age')?.value || '—';
+  const menopause  = document.getElementById('menopause')?.value || '—';
+  const brca       = document.getElementById('brca')?.value || '—';
+  const famHistory = document.querySelector('#familyHistoryGroup .toggle-btn.active-yes') ? 'Yes' : 'No';
+  const hormonal   = document.querySelector('#hormonalGroup .toggle-btn.active-yes') ? 'Yes' : 'No';
+  const symptoms   = Array.from(document.querySelectorAll('.symptom-chip.active')).map(c => c.querySelector('span')?.textContent || c.textContent.trim()).join(', ') || 'None reported';
+  twoCol([
+    ['Age', age + ' years'], ['Menopause Status', menopause],
+    ['BRCA Mutation', brca], ['Family History', famHistory],
+    ['Hormonal Therapy', hormonal], ['Date of Analysis', dateStr],
+  ]);
+  checkPage(7);
+  doc.setFont('helvetica','normal').setFontSize(8.5).setTextColor(110,110,120);
+  doc.text('Symptoms Reported:', M + 2, y);
+  doc.setFont('helvetica','bold').setTextColor(30,30,30);
+  doc.text(symptoms, M + 40, y);
+  y += 8;
+
+  // Tumor params
+  divider(); sectionHeader('Tumor Parameters (Clinical Measurements)');
+  twoCol([
+    ['Radius (mean)', (document.getElementById('radiusVal')?.textContent||'—') + ' mm'],
+    ['Texture (mean)', document.getElementById('textureVal')?.textContent||'—'],
+    ['Perimeter (mean)', (document.getElementById('perimeterVal')?.textContent||'—') + ' mm'],
+    ['Area (mean)', (document.getElementById('areaVal')?.textContent||'—') + ' mm²'],
+    ['Smoothness', document.getElementById('smoothness')?.value||'—'],
+    ['Concavity', document.getElementById('concavity')?.value||'—'],
+  ]);
+
+  // AI results
+  divider(); sectionHeader('AI Analysis Results — Fusion Model');
+  const textProb  = Math.round((r.text_model?.probability||0)*100||0);
+  const imageProb = Math.round((r.image_model?.probability||0)*100||0);
+  const fusedProb = Math.round((fusion.final_score||0)*100||confScore);
+  progressBar('Clinical Model (Text)', textProb,  riskColor(textProb));
+  progressBar('Imaging Model (CNN)',   imageProb, riskColor(imageProb));
+  progressBar('Fused AI Score',        fusedProb, riskColor(fusedProb));
+  twoCol([
+    ['Clinical Model', r.text_model?.best_model||r.text_model?.prediction||'—'],
+    ['Fusion Method', fusion.fusion_method||'Weighted (0.6 / 0.4)'],
+    ['Imaging Model', r.image_model?.available ? (r.image_model?.prediction||'—') : 'Not Provided'],
+    ['Inference Time', (r.inference_time||'—')+'s'],
+  ]);
+
+  // Risk breakdown
+  divider(); sectionHeader('Risk Breakdown Scores');
+  const rb = r.risk_breakdown || {};
+  progressBar('Malignancy Probability', rb.malignancy_probability||0, riskColor(rb.malignancy_probability||0));
+  progressBar('Invasiveness Score',     rb.invasiveness_score||0,    riskColor(rb.invasiveness_score||0));
+  progressBar('Metastatic Risk',        rb.metastatic_risk||0,       riskColor(rb.metastatic_risk||0));
+
+  if (r.stage_estimate) {
+    divider(); sectionHeader('Cancer Stage Estimate');
+    labelVal('TNM Classification', r.stage_estimate.tnm||'—');
+    labelVal('Stage Description',  r.stage_estimate.desc||'—');
+  }
+
+  if (r.image_model?.available) {
+    divider(); sectionHeader('Radiomics & Imaging Analysis');
+    const rad = r.image_model.radiomics || {};
+    twoCol([
+      ['Mass Density', rad.mass_density?.value||'—'],
+      ['Margin Irregularity', rad.margin_irregularity?.value||'—'],
+      ['Calcification', rad.calcification?.value||'—'],
+      ['Echogenicity', rad.echogenicity?.value||'—'],
+    ]);
+    if (rad.mass_density)        progressBar('Mass Density',        rad.mass_density.score||0,        [90,160,220]);
+    if (rad.margin_irregularity) progressBar('Margin Irregularity', rad.margin_irregularity.score||0, [90,160,220]);
+    if (rad.calcification)       progressBar('Calcification',       rad.calcification.score||0,       [90,160,220]);
+    if (rad.echogenicity)        progressBar('Echogenicity',        rad.echogenicity.score||0,         [90,160,220]);
+  }
+
+  const features = r.text_model?.feature_importance || [];
+  if (features.length) {
+    divider(); sectionHeader('Top Feature Importance (Clinical Signals)');
+    features.slice(0,8).forEach(f => {
+      const col = f.score>65?[198,40,40]:f.score>40?[245,124,0]:[46,125,50];
+      progressBar(f.name, f.score, col);
+    });
+  }
+
+  checkPage(20); divider(); sectionHeader('Clinical Recommendation');
+  const rec = r.recommendation || {};
+  if (rec.summary) {
+    const lines = doc.splitTextToSize(rec.summary, W - M*2 - 6);
+    doc.setFont('helvetica','italic').setFontSize(9).setTextColor(60,60,80);
+    doc.text(lines, M + 3, y); y += lines.length * 5.5 + 3;
+  }
+  (rec.steps||[]).forEach((step, i) => {
+    checkPage(10);
+    doc.setFillColor(233,30,140);
+    doc.circle(M+6, y-1.5, 3.5, 'F');
+    doc.setFont('helvetica','bold').setFontSize(8).setTextColor(255,255,255);
+    doc.text(String(i+1), M+4.6, y-0.2);
+    doc.setFont('helvetica','normal').setFontSize(8.5).setTextColor(30,30,30);
+    const sl = doc.splitTextToSize(step, W - M*2 - 20);
+    doc.text(sl, M+13, y-1.5); y += sl.length*5.5+3;
+  });
+
+  const allModels = r.text_model?.all_models || {};
+  const modelEntries = Object.entries(allModels);
+  if (modelEntries.length > 1) {
+    divider(); sectionHeader('Model Comparison (All Classifiers)');
+    modelEntries.sort((a,b)=>b[1]-a[1]).forEach(([name,prob])=>{
+      progressBar(name, prob, [180,60,200]);
+    });
+  }
+
+  // Footer
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    drawRect(0, 287, W, 10, 0, [245,228,243]);
+    doc.setFont('helvetica','normal').setFontSize(7).setTextColor(160,80,130);
+    doc.text('Pink Ribbon AI  ·  Confidential Clinical Report  ·  Not a substitute for professional medical advice', M, 293.5);
+    doc.text(`Page ${p} of ${totalPages}`, W-M, 293.5, { align:'right' });
+  }
+
+  const safePid = pid.replace(/[^a-zA-Z0-9_-]/g,'_');
+  doc.save(`PinkRibbon_Report_${safePid}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.pdf`);
+  showToast('PDF report downloaded successfully!', 'success');
+}
+
+// ── Initial state: render empty stage ────────────────────
+renderStageTimeline({ active_stages: [] });
+</script>
+</body>
+</html>

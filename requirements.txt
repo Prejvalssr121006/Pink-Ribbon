@@ -1,0 +1,25 @@
+# ── Web framework ──────────────────────────
+flask
+flask-cors
+werkzeug
+
+# ── Data & ML ──────────────────────────────
+numpy
+pandas
+scikit-learn
+
+# ── Deep learning ──────────────────────────
+tensorflow          # use tensorflow-cpu if no GPU
+
+# ── Image processing ───────────────────────
+Pillow
+opencv-python
+scipy
+
+# ── Explainability ─────────────────────────
+shap
+matplotlib
+
+# ── Dataset download (CBIS-DDSM) ───────────
+kagglehub[pandas-datasets]   # pip install "kagglehub[pandas-datasets]"
+pydicom                       # only needed if dataset uses DICOM format
