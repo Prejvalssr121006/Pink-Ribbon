@@ -1,0 +1,27 @@
+# Data & large datasets
+data/
+data/images/
+*.csv
+
+# Python byte code & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Uploads
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Environments
+venv/
+env/
+.venv/
+.env
+
+# Vercel
+.vercel/
+
+# OS artifacts
+.DS_Store
+Thumbs.db

@@ -1,44 +1,51 @@
 """
 Pink Ribbon: Multimodal Breast Cancer Detection System
-app.py — Flask Backend (FIXED)
-
-KEY FIX: train_text_model.py trains on data.csv which has:
-  id + diagnosis + 30 features = drops diagnosis, but 'id' may remain
-  depending on the CSV, leaving 31 or 30 numeric columns.
-  This app.py detects the expected feature count from the saved scaler
-  and builds the vector accordingly — no more 30 vs 31 mismatch.
-
-Uses:
-  utils/preprocess.py  ->  predict_text(), predict_image(), get_label()
-  utils/fusion.py      ->  fuse_predictions(text_prob, image_prob)
-  utils/explain.py     ->  make_gradcam_heatmap(), save_gradcam()
+app.py — Flask Backend & Serverless API for Vercel
 """
 
 import os
 import json
 import base64
 import time
+import tempfile
 import traceback
 import numpy as np
 import pickle
 
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from werkzeug.utils import secure_filename
+from PIL import Image, ImageFilter
 
 from utils.preprocess import predict_text, predict_image, get_label
 from utils.fusion     import fuse_predictions
 from utils.explain    import (make_gradcam_heatmap, save_gradcam,
-                               plot_feature_importance, shap_explanation)
+                              plot_feature_importance, shap_explanation)
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, 'templates'),
+    static_folder=os.path.join(BASE_DIR, 'static')
+)
+
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
-app.config['UPLOAD_FOLDER']      = os.path.join('static', 'uploads')
 app.config['SECRET_KEY']         = 'pink-ribbon-2024'
 
-ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'dcm'}
+# In serverless environments (like AWS Lambda / Vercel), /tmp is the only writable directory
+IS_SERVERLESS = bool(os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'))
+if IS_SERVERLESS:
+    UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), 'pink_ribbon_uploads')
+else:
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs('static', exist_ok=True)
+try:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+except Exception:
+    UPLOAD_FOLDER = tempfile.gettempdir()
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'dcm'}
 
 
 def allowed(filename):
@@ -63,7 +70,6 @@ FEATURES_30 = [
 ]
 
 # If 'id' column was NOT dropped in train_text_model.py, there are 31 features.
-# We prepend a dummy id=0 in that case.
 FEATURES_31 = ['id'] + FEATURES_30
 
 # Wisconsin dataset medians for unmapped features
@@ -101,7 +107,7 @@ def _get_model_n_features():
     the trained model expects. Returns 30 or 31 (or None on error).
     """
     try:
-        pkl_path = os.path.join('models', 'text_model.pkl')
+        pkl_path = os.path.join(BASE_DIR, 'models', 'text_model.pkl')
         with open(pkl_path, 'rb') as f:
             _, scaler = pickle.load(f)
         return int(scaler.n_features_in_)
@@ -112,12 +118,11 @@ def _get_model_n_features():
 
 def _build_feature_vector(form):
     """
-    Reads 8 values from the frontend form and builds the exact
+    Reads values from the frontend form and builds the exact
     feature vector the model was trained on (auto-detects 30 or 31).
     """
     n = _get_model_n_features()
 
-    # Values from frontend sliders/inputs
     user_vals = {
         'radius_mean':    float(form.get('radius',      18.2)),
         'texture_mean':   float(form.get('texture',     22.4)),
@@ -128,10 +133,7 @@ def _build_feature_vector(form):
         'symmetry_mean':  float(form.get('symmetry',    0.205)),
     }
 
-    if n == 31:
-        feature_list = FEATURES_31
-    else:
-        feature_list = FEATURES_30
+    feature_list = FEATURES_31 if n == 31 else FEATURES_30
 
     vector = []
     for feat in feature_list:
@@ -154,8 +156,8 @@ def index():
 
 @app.route('/api/health')
 def health():
-    text_ok  = os.path.exists(os.path.join('models', 'text_model.pkl'))
-    image_ok = os.path.exists(os.path.join('models', 'image_model.h5'))
+    text_ok  = os.path.exists(os.path.join(BASE_DIR, 'models', 'text_model.pkl'))
+    image_ok = os.path.exists(os.path.join(BASE_DIR, 'models', 'image_model.h5'))
     n_feat   = _get_model_n_features() if text_ok else '?'
     return jsonify({
         'status':           'online',
@@ -170,12 +172,10 @@ def health():
 def analyze():
     start = time.time()
     try:
-
         # ── 1. Build feature vector (auto 30 or 31) ───────────
         feature_vector = _build_feature_vector(request.form)
 
         # ── 2. Text model prediction ──────────────────────────
-        #       preprocess.predict_text(list) → (int, float 0-1)
         text_pred_int, text_prob = predict_text(feature_vector)
         text_label    = get_label(text_pred_int)
         text_prob_pct = round(float(text_prob) * 100, 2)
@@ -201,7 +201,7 @@ def analyze():
             if field in request.files:
                 f = request.files[field]
                 if f and f.filename and allowed(f.filename):
-                    fname          = secure_filename(f'{int(time.time())}_{f.filename}')
+                    fname = secure_filename(f'{int(time.time())}_{f.filename}')
                     saved_img_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
                     f.save(saved_img_path)
 
@@ -209,12 +209,23 @@ def analyze():
                     img_label    = get_label(img_pred_int)
                     img_prob_pct = round(float(img_prob) * 100, 2)
 
-                    gradcam_path = os.path.join('static', 'gradcam.jpg')
+                    gradcam_path = os.path.join(app.config['UPLOAD_FOLDER'], f'gradcam_{int(time.time())}.jpg')
                     _make_gradcam_safe(saved_img_path, gradcam_path)
 
                     if os.path.exists(gradcam_path):
                         with open(gradcam_path, 'rb') as gf:
                             gradcam_b64 = base64.b64encode(gf.read()).decode()
+                        try:
+                            os.remove(gradcam_path)
+                        except Exception:
+                            pass
+
+                    # Clean up uploaded image in serverless
+                    if IS_SERVERLESS:
+                        try:
+                            os.remove(saved_img_path)
+                        except Exception:
+                            pass
 
                     image_result = {
                         'prediction':  img_label,
@@ -286,54 +297,41 @@ def analyze():
 # ════════════════════════════════════════════════════════════════
 
 def _make_gradcam_safe(img_path, out_path):
-    """Real Grad-CAM via explain.py; fallback to PIL heatmap."""
+    """Generates Grad-CAM or salience heatmap using Pillow & NumPy."""
     try:
-        from tensorflow.keras.models        import load_model
-        from tensorflow.keras.preprocessing import image as keras_image
-
-        model = load_model(os.path.join('models', 'image_model.h5'))
-
-        last_conv = None
-        for layer in reversed(model.layers):
-            if 'conv' in layer.name.lower():
-                last_conv = layer.name
-                break
-        if last_conv is None:
-            raise ValueError('No conv layer found')
-
-        img_arr = keras_image.load_img(img_path, target_size=(224, 224))
-        img_arr = keras_image.img_to_array(img_arr) / 255.0
-        img_arr = np.expand_dims(img_arr, axis=0)
-
-        heatmap = make_gradcam_heatmap(img_arr, model, last_conv)
-        save_gradcam(img_path, model, heatmap)   # saves to static/gradcam.jpg
-
+        from utils.explain import save_gradcam
+        res = save_gradcam(img_path, output_path=out_path)
+        if not res or not os.path.exists(out_path):
+            _gradcam_pil_fallback(img_path, out_path)
     except Exception as e:
-        print(f'[GradCAM] explain.py failed: {e} — using fallback')
+        print(f'[GradCAM] failed: {e} — using fallback')
         _gradcam_pil_fallback(img_path, out_path)
 
 
 def _gradcam_pil_fallback(img_path, out_path):
     try:
-        from PIL import Image
-        from scipy.ndimage import uniform_filter
-
         img  = Image.open(img_path).convert('RGB').resize((224, 224))
         orig = np.array(img, dtype=np.float32) / 255.0
-        gray = np.array(img.convert('L'), dtype=np.float32) / 255.0
+        gray = img.convert('L')
+        blur = gray.filter(ImageFilter.BoxBlur(12))
 
-        blur = uniform_filter(gray, 20)
-        var  = uniform_filter((gray - blur) ** 2, 20)
-        var  = np.sqrt(var)
-        if var.max() > 0:
-            var /= var.max()
+        g_arr = np.array(gray, dtype=np.float32) / 255.0
+        b_arr = np.array(blur, dtype=np.float32) / 255.0
+        diff  = np.abs(g_arr - b_arr)
+        if diff.max() > 0:
+            diff /= diff.max()
 
-        r    = np.clip(1.5 - np.abs(var * 4 - 3), 0, 1)
-        g    = np.clip(1.5 - np.abs(var * 4 - 2), 0, 1)
-        b    = np.clip(1.5 - np.abs(var * 4 - 1), 0, 1)
+        r    = np.clip(1.5 - np.abs(diff * 4 - 3), 0, 1)
+        g    = np.clip(1.5 - np.abs(diff * 4 - 2), 0, 1)
+        b    = np.clip(1.5 - np.abs(diff * 4 - 1), 0, 1)
         heat = np.stack([r, g, b], axis=-1)
         out  = np.clip(orig * 0.6 + heat * 0.4, 0, 1)
-        Image.fromarray((out * 255).astype(np.uint8)).save(out_path)
+
+        out_dir = os.path.dirname(out_path)
+        if out_dir:
+            os.makedirs(out_dir, exist_ok=True)
+
+        Image.fromarray((out * 255).astype(np.uint8)).save(out_path, format="JPEG", quality=90)
     except Exception as e:
         print(f'[GradCAM PIL fallback] {e}')
 
@@ -341,7 +339,8 @@ def _gradcam_pil_fallback(img_path, out_path):
 def _safe_feature_importance():
     """Feature importance from saved model; fallback to static values."""
     try:
-        with open(os.path.join('models', 'text_model.pkl'), 'rb') as f:
+        pkl_path = os.path.join(BASE_DIR, 'models', 'text_model.pkl')
+        with open(pkl_path, 'rb') as f:
             model, _ = pickle.load(f)
 
         if hasattr(model, 'feature_importances_'):
@@ -376,18 +375,21 @@ def _safe_feature_importance():
 
 
 def _safe_shap(feature_vector):
-    """SHAP values for explainability panel."""
+    """Analytical Linear SHAP values for explainability without heavy shap dependency."""
     try:
-        import shap
-        with open(os.path.join('models', 'text_model.pkl'), 'rb') as f:
+        pkl_path = os.path.join(BASE_DIR, 'models', 'text_model.pkl')
+        with open(pkl_path, 'rb') as f:
             model, scaler = pickle.load(f)
 
         X        = np.array(feature_vector).reshape(1, -1)
-        X_scaled = scaler.transform(X)
+        X_scaled = scaler.transform(X)[0]
 
-        explainer = shap.Explainer(model, X_scaled)
-        vals      = explainer(X_scaled)
-        raw       = vals.values[0].tolist()
+        # For LogisticRegression, Linear SHAP is coef_i * X_scaled_i
+        if hasattr(model, 'coef_'):
+            coefs = model.coef_[0]
+            raw = (coefs * X_scaled).tolist()
+        else:
+            raw = (X_scaled * 0.1).tolist()
 
         names  = FEATURES_31 if len(raw) == 31 else FEATURES_30
         result = [
@@ -404,11 +406,10 @@ def _safe_shap(feature_vector):
 
 def _extract_radiomics(image_path, prob):
     try:
-        from PIL import Image
         img  = Image.open(image_path).convert('L').resize((128, 128))
         arr  = np.array(img, dtype=np.float32) / 255.0
-        mean = arr.mean()
-        std  = arr.std()
+        mean = float(arr.mean())
+        std  = float(arr.std())
         hist, _ = np.histogram(arr, bins=32, range=(0, 1))
         hn   = hist / (hist.sum() + 1e-8)
         ent  = float(-np.sum(hn * np.log2(hn + 1e-8)))
@@ -490,7 +491,7 @@ def _recommendation(prediction, category):
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    return send_from_directory('static', filename)
+    return send_from_directory(os.path.join(BASE_DIR, 'static'), filename)
 
 
 if __name__ == '__main__':

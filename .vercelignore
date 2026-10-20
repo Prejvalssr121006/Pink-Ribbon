@@ -1,0 +1,20 @@
+# Exclude dataset and heavy files from Vercel Lambda bundle
+data/
+data/**
+*.csv
+
+# Offline training scripts
+models/train_image_model.py
+models/train_text_model.py
+
+# Git & System
+.git
+.gitignore
+.DS_Store
+
+# Cache & Temporary uploads
+__pycache__/
+*.pyc
+*.pyo
+static/uploads/*
+!static/uploads/.gitkeep
